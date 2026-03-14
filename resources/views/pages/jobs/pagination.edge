@@ -1,0 +1,11 @@
+@if(paginator.lastPage > 1)
+  <div class="pagination">
+    @if(paginator.currentPage > 1)
+      <a :href="`?page={{ paginator.currentPage - 1 }}&tab=${tab}`" class="page-link">Previous</a>
+    @end
+    <span class="page-info">Page {{ paginator.currentPage }} of {{ paginator.lastPage }}</span>
+    @if(paginator.currentPage < paginator.lastPage)
+      <a :href="`?page={{ paginator.currentPage + 1 }}&tab=${tab}`" class="page-link">Next</a>
+    @end
+  </div>
+@end

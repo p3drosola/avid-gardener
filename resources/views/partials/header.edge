@@ -7,6 +7,7 @@
     </div>
     <div>
       <nav>
+        @!link({ route: 'jobs.index', text: 'Jobs' })
         @if(auth.user)
           @!avatar({ initials: auth.user.initials })
           @form({ route: 'session.destroy', method: 'POST' })

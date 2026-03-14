@@ -1,0 +1,187 @@
+@layout()
+  <div class="jobs-page">
+    <div class="jobs-header">
+      <h1>Jobs</h1>
+    </div>
+
+    <div class="tabs" x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'scheduled' }">
+      <nav class="tab-nav">
+        <a :class="{ active: tab === 'scheduled' }" href="?tab=scheduled" @click.prevent="tab = 'scheduled'; history.replaceState(null, '', '?tab=scheduled')">
+          Scheduled
+          <span class="badge">{{ schedules.length }}</span>
+        </a>
+        <a :class="{ active: tab === 'pending' }" href="?tab=pending" @click.prevent="tab = 'pending'; history.replaceState(null, '', '?tab=pending')">
+          Pending
+          <span class="badge">{{ pendingJobs.total }}</span>
+        </a>
+        <a :class="{ active: tab === 'completed' }" href="?tab=completed" @click.prevent="tab = 'completed'; history.replaceState(null, '', '?tab=completed')">
+          Completed
+          <span class="badge">{{ completedJobs.total }}</span>
+        </a>
+        <a :class="{ active: tab === 'failed' }" href="?tab=failed" @click.prevent="tab = 'failed'; history.replaceState(null, '', '?tab=failed')">
+          Failed
+          <span class="badge {{ failedJobs.total > 0 ? 'badge-error' : '' }}">{{ failedJobs.total }}</span>
+        </a>
+      </nav>
+
+      {{-- Scheduled Jobs --}}
+      <div x-show="tab === 'scheduled'" x-cloak>
+        @if(schedules.length === 0)
+          <div class="empty-state">
+            <p>No scheduled jobs</p>
+          </div>
+        @else
+          <table class="jobs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Frequency</th>
+                <th>Run Count</th>
+                <th>Last Run</th>
+                <th>Next Run</th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(schedule in schedules)
+                <tr>
+                  <td><code>{{ schedule.id }}</code></td>
+                  <td class="job-name">{{ schedule.name }}</td>
+                  <td>
+                    <span class="status-badge status-{{ schedule.status }}">{{ schedule.status }}</span>
+                  </td>
+                  <td>
+                    @if(schedule.cron_expression)
+                      <code>{{ schedule.cron_expression }}</code>
+                    @elseif(schedule.every_ms)
+                      every {{ Math.round(schedule.every_ms / 1000) }}s
+                    @end
+                  </td>
+                  <td>{{ schedule.run_count }}{{ schedule.run_limit ? ' / ' + schedule.run_limit : '' }}</td>
+                  <td>{{ formatEpoch(schedule.last_run_at) }}</td>
+                  <td>{{ formatEpoch(schedule.next_run_at) }}</td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+        @end
+      </div>
+
+      {{-- Pending Jobs --}}
+      <div x-show="tab === 'pending'" x-cloak>
+        @if(pendingJobs.total === 0)
+          <div class="empty-state">
+            <p>No pending jobs</p>
+          </div>
+        @else
+          <table class="jobs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Job</th>
+                <th>Queue</th>
+                <th>Status</th>
+                <th>Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(job in pendingJobs.rows)
+                @let(jobData = JSON.parse(job.data))
+                <tr>
+                  <td><code class="job-id">{{ job.id.slice(0, 8) }}</code></td>
+                  <td class="job-name">{{ jobData.name }}</td>
+                  <td><code>{{ job.queue }}</code></td>
+                  <td>
+                    <span class="status-badge status-{{ job.status }}">{{ job.status }}</span>
+                  </td>
+                  <td><code class="payload">{{ JSON.stringify(jobData.payload) }}</code></td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+          @let(paginator = pendingJobs)
+          @include('pages/jobs/pagination')
+        @end
+      </div>
+
+      {{-- Completed Jobs --}}
+      <div x-show="tab === 'completed'" x-cloak>
+        @if(completedJobs.total === 0)
+          <div class="empty-state">
+            <p>No completed jobs yet</p>
+          </div>
+        @else
+          <table class="jobs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Job</th>
+                <th>Queue</th>
+                <th>Status</th>
+                <th>Payload</th>
+                <th>Finished</th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(job in completedJobs.rows)
+                @let(jobData = JSON.parse(job.data))
+                <tr>
+                  <td><code class="job-id">{{ job.id.slice(0, 8) }}</code></td>
+                  <td class="job-name">{{ jobData.name }}</td>
+                  <td><code>{{ job.queue }}</code></td>
+                  <td>
+                    <span class="status-badge status-completed">completed</span>
+                  </td>
+                  <td><code class="payload">{{ JSON.stringify(jobData.payload) }}</code></td>
+                  <td>{{ formatEpoch(job.finished_at) }}</td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+          @let(paginator = completedJobs)
+          @include('pages/jobs/pagination')
+        @end
+      </div>
+
+      {{-- Failed Jobs --}}
+      <div x-show="tab === 'failed'" x-cloak>
+        @if(failedJobs.total === 0)
+          <div class="empty-state">
+            <p>No failed jobs</p>
+          </div>
+        @else
+          <table class="jobs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Job</th>
+                <th>Queue</th>
+                <th>Status</th>
+                <th>Error</th>
+                <th>Failed At</th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(job in failedJobs.rows)
+                @let(jobData = JSON.parse(job.data))
+                <tr>
+                  <td><code class="job-id">{{ job.id.slice(0, 8) }}</code></td>
+                  <td class="job-name">{{ jobData.name }}</td>
+                  <td><code>{{ job.queue }}</code></td>
+                  <td>
+                    <span class="status-badge status-failed">failed</span>
+                  </td>
+                  <td class="error-text">{{ job.error || '—' }}</td>
+                  <td>{{ formatEpoch(job.finished_at) }}</td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+          @let(paginator = failedJobs)
+          @include('pages/jobs/pagination')
+        @end
+      </div>
+    </div>
+  </div>
+@end

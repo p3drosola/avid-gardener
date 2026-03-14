@@ -4,6 +4,7 @@
  */
 
 export const controllers = {
+  Jobs: () => import('#controllers/jobs_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
   Session: () => import('#controllers/session_controller'),
 }

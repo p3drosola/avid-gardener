@@ -10,11 +10,16 @@ interface WaterPlantsPayload {
 export default class WaterPlants extends Job<WaterPlantsPayload> {
 	static options: JobOptions = {
 		queue: "default",
-		maxRetries: 3,
+		maxRetries: 1,
 		removeOnComplete: { age: "7d" },
+		removeOnFail: { age: "7d" },
 	};
 
 	async execute() {
+		if (Math.random() < 0.3) {
+			throw new Error("Random watering failure");
+		}
+
 		logger.info(this.payload, "Watering plant");
 	}
 
