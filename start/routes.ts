@@ -14,6 +14,10 @@ import router from "@adonisjs/core/services/router";
 router.on("/").render("pages/home").as("home");
 router.get("/jobs", [controllers.Jobs, "index"]).as("jobs.index");
 
+router.get("/error-test", async () => {
+	throw new Error("This is a test exception for error tracking");
+}).as("error_test");
+
 router
 	.group(() => {
 		router.get("signup", [controllers.NewAccount, "create"]);

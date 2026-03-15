@@ -1,6 +1,7 @@
 import logger from "@adonisjs/core/services/logger";
 import { Job } from "@adonisjs/queue";
 import type { JobOptions } from "@adonisjs/queue/types";
+import { Monocle } from "@monocle.sh/adonisjs-agent";
 
 interface WaterPlantsPayload {
 	plantId: number;
@@ -25,5 +26,10 @@ export default class WaterPlants extends Job<WaterPlantsPayload> {
 
 	async failed(error: Error) {
 		logger.error(this.payload, `WaterPlants failed: ${error.message}`);
+		Monocle.captureException(error, {
+			// user: { id: "123", email: "user@example.com" },
+			tags: { component: "job:WaterPlants" },
+			extra: { payload: this.payload },
+		});
 	}
 }
