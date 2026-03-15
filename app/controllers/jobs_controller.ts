@@ -1,6 +1,7 @@
 import db from "@adonisjs/lucid/services/db";
 import { DateTime } from "luxon";
 import type { HttpContext } from "@adonisjs/core/http";
+import logger from "@adonisjs/core/services/logger";
 
 function formatEpoch(ms: number | null): string {
 	if (!ms) return "—";
@@ -9,6 +10,7 @@ function formatEpoch(ms: number | null): string {
 
 export default class JobsController {
 	async index({ view, request }: HttpContext) {
+		logger.info("Rendering jobs dashboard");
 		const page = request.input("page", 1);
 		const tab = request.input("tab", "scheduled");
 

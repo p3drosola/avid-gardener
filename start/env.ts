@@ -30,5 +30,10 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Variables for configuring @adonisjs/queue
   |----------------------------------------------------------
   */
-  QUEUE_DRIVER: Env.schema.enum(['redis', 'database', 'sync'] as const)
+  QUEUE_DRIVER: Env.schema.enum(['redis', 'database', 'sync'] as const),
+
+  APP_NAME: Env.schema.string(),
+  APP_VERSION: Env.schema.string(),
+  APP_ENV: Env.schema.enum(['development', 'staging', 'production'] as const),
+  MONOCLE_API_KEY: Env.schema.string.optional()
 })

@@ -67,6 +67,7 @@
     "@adonisjs/shield": "^9.0.0",
     "@adonisjs/static": "^2.0.0",
     "@adonisjs/vite": "^5.1.0",
+    "@monocle.sh/adonisjs-agent": "^1.0.0",
     "@vinejs/vine": "^4.3.0",
     "better-sqlite3": "^12.6.2",
     "edge.js": "^6.5.0",
