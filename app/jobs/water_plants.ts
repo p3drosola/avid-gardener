@@ -1,7 +1,7 @@
 import logger from "@adonisjs/core/services/logger";
 import { Job } from "@adonisjs/queue";
 import type { JobOptions } from "@adonisjs/queue/types";
-import { Monocle } from "@monocle.sh/adonisjs-agent";
+import { Monocle, span } from "@monocle.sh/adonisjs-agent";
 
 interface WaterPlantsPayload {
 	plantId: number;
@@ -16,6 +16,7 @@ export default class WaterPlants extends Job<WaterPlantsPayload> {
 		removeOnFail: { age: "7d" },
 	};
 
+	@span({ name: "job:WaterPlants" })
 	async execute() {
 		if (Math.random() < 0.3) {
 			throw new Error("Random watering failure");
